@@ -1,4 +1,48 @@
+const width = 28;
+const height = 28;
+const nodesRow = 64;
+
+document.querySelector('#clrEnv').addEventListener('click', function() {
+    generateEnvironment();
+});
+
 generateEnvironment();
+
+generateStartEnd(594, 615);
+drawStartEndPath(594, 615);
+
+function drawStartEndPath(start, end) {
+    let x1, x2, y1, y2;
+    let startNode = document.querySelectorAll(`[data-id="${start}"]`)[0].childNodes[1];
+    let endNode = document.querySelectorAll(`[data-id="${end}"]`)[0].childNodes[1];
+
+    x1 = startNode.x.baseVal.value + width/2;
+    x2 = endNode.x.baseVal.value + width/2;
+
+    y1 = startNode.y.baseVal.value + height/2;
+    y2 = endNode.y.baseVal.value + height/2;
+
+
+    svg.innerHTML += 
+    `
+    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:rgb(0,0,255);stroke-width:2" />
+    `;
+}
+
+function calcPos(num) {
+    return num*2+1;
+}
+
+function generateStartEnd(start, end) {
+    let startNodePos = calcPos(start);
+    let endNodePos = calcPos(end);
+
+    svg.childNodes[startNodePos].childNodes[1].setAttribute('fill', 'green');
+    svg.childNodes[startNodePos].childNodes[1].setAttribute('start', true);
+
+    svg.childNodes[endNodePos].childNodes[1].setAttribute('fill', 'red');
+    svg.childNodes[endNodePos].childNodes[1].setAttribute('end', true);
+}
 
 function generateEnvironment() {
     let svg = document.querySelector('#svg');
@@ -7,16 +51,15 @@ function generateEnvironment() {
     let x = 0;
     let y = 0;
 
-    const width = 30;
-    const height = 30;
-
     for (let i = 0; i < ((1920/30) * (1080/30)); i++) {
         content +=
         `
-        <rect class="rect" x="${x}" y="${y}" width="${width}" height="${height}" r="0" rx="0" ry="0" fill="#ffffff" stroke="#000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); stroke-opacity: 0.2;" stroke-opacity="0.2"></rect>       
+        <g data-id="${i}">
+            <rect class="rect" x="${x}" y="${y}" width="${width}" height="${height}" r="0" rx="0" ry="0" fill="#ffffff" stroke="#000" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); stroke-opacity: 0.2;" stroke-opacity="0.2"></rect>       
+        </g>
         `;
         x += width;
-        if (i % 64 == 0 && i != 0) {
+        if (i % nodesRow == 0 && i != 0) {
             x = 0;
             y += height;
         }
@@ -26,7 +69,7 @@ function generateEnvironment() {
 }
 
 document.oncontextmenu = function(e) {
-    if (e.srcElement.parentNode.parentNode.id == 'environment') {
+    if (e.srcElement.parentNode.parentNode.parentNode.id == 'environment') {
         e.preventDefault();
     }
 }
@@ -87,9 +130,13 @@ function draw(mode) {
     }
 
     if (mode == 1) {
-        // Paint
+        // Paint - Wall
         if (!event.target.closest('.rect')) return;
         event.target.setAttribute('fill', '#808080');
-        event.target.setAttribute('transform', 'matrix(1,0,0,1,0,0)');
     }
+}
+
+function playSound() {
+    let audio = new Audio('./resources/pop.flac');
+    audio.play();
 }
